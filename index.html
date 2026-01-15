@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>富邦證券 3.0 原子化開戶 Demo</title>
+    <title>富邦證券 3.0 全流程 Demo (UI一致版)</title>
     <style>
         :root {
             --fubon-blue: #0076a9;
             --fubon-teal: #00a0b0;
             --bg-gray: #f5f7fa;
             --text-dark: #333;
-            --card-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --text-light: #666;
+            --error-red: #ff4d4f;
+            --success-green: #52c41a;
         }
 
         body {
@@ -23,12 +25,12 @@
             min-height: 100vh;
         }
 
-        /* 手機模擬框 */
+        /* 手機容器 */
         .mobile-container {
             width: 100%;
             max-width: 390px;
             background: #fff;
-            height: 844px; /* iPhone 12/13 height */
+            height: 844px;
             border-radius: 30px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.2);
             overflow: hidden;
@@ -40,94 +42,99 @@
 
         /* Header */
         .header {
-            background: linear-gradient(135deg, var(--fubon-blue), var(--fubon-teal));
-            color: white;
-            padding: 40px 20px 20px;
-            text-align: left;
+            background: #fff;
+            padding: 15px 20px 10px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 40px;
         }
-
-        .header h2 { margin: 0; font-size: 20px; }
-        .header p { margin: 5px 0 0; font-size: 14px; opacity: 0.9; }
+        .header-left { display: flex; align-items: center; gap: 10px; }
+        .btn-back { font-size: 20px; color: var(--fubon-blue); cursor: pointer; border: none; background: none; padding: 0; display: none; }
+        .header h2 { margin: 0; font-size: 18px; color: var(--text-dark); }
+        .step-indicator { font-size: 14px; color: var(--fubon-blue); font-weight: bold; }
 
         /* Progress Bar */
-        .progress-container {
-            padding: 15px 20px;
-            background: #fff;
-            border-bottom: 1px solid #eee;
-        }
-        .step-label { font-size: 12px; color: var(--fubon-blue); font-weight: bold; margin-bottom: 5px; display: block;}
-        .progress-bar { height: 4px; background: #eee; border-radius: 2px; overflow: hidden; }
-        .progress-fill { height: 100%; width: 25%; background: var(--fubon-teal); }
+        .progress-bar { height: 4px; background: #eee; width: 100%; }
+        .progress-fill { height: 100%; width: 25%; background: var(--fubon-teal); transition: width 0.3s ease; }
 
-        /* Content */
-        .content {
-            padding: 20px;
+        /* Pages */
+        .step-page {
+            display: none;
             flex: 1;
             overflow-y: auto;
+            padding: 20px;
+            animation: fadeIn 0.4s ease;
+            padding-bottom: 80px;
+        }
+        .step-page.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .question {
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--text-dark);
-            margin-bottom: 15px;
-        }
+        /* UI Elements */
+        .title-lg { font-size: 22px; font-weight: bold; margin-bottom: 10px; color: var(--text-dark); }
+        .desc { font-size: 14px; color: var(--text-light); line-height: 1.5; margin-bottom: 20px; }
 
-        /* Cards Grid - Updated for 6 items */
-        .options-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
+        /* Cards & Switch (Step 1) */
+        .info-card {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #fff; padding: 16px; border-radius: 12px; margin-bottom: 12px;
+            border: 1px solid #eee; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
         }
+        .info-content { display: flex; align-items: center; }
+        .info-icon { font-size: 22px; margin-right: 15px; width: 30px; text-align: center; }
+        .info-text strong { display: block; font-size: 15px; color: #333; margin-bottom: 3px; }
+        .info-text span { font-size: 12px; color: #888; }
+        .section-label { font-size: 14px; font-weight: bold; color: var(--text-light); margin: 25px 0 10px; }
 
+        /* Switch */
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--fubon-blue); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* Checkbox Card (Step 3) */
+        .checkbox-card {
+            display: flex; align-items: center; background: #fff; padding: 16px; border-radius: 12px;
+            margin-bottom: 12px; border: 1px solid #eee; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            cursor: pointer; transition: all 0.2s;
+        }
+        .checkbox-card input[type="checkbox"] { transform: scale(1.5); margin-right: 15px; cursor: pointer; accent-color: var(--fubon-blue); }
+
+        /* Buttons */
+        .btn-primary {
+            background: var(--fubon-blue); color: white; border: none; width: 100%; padding: 16px; font-size: 16px; font-weight: bold;
+            border-radius: 12px; margin-top: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 118, 169, 0.2); transition: background 0.2s;
+        }
+        .btn-primary:hover { background: #006390; }
+        .btn-primary:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
+
+        /* Step 2: Grid */
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .option-card {
-            background: #fff;
-            border: 2px solid #eee;
-            border-radius: 12px;
-            padding: 15px 10px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 90px;
+            background: #fff; border: 2px solid #eee; border-radius: 12px; padding: 15px 10px;
+            text-align: center; cursor: pointer; transition: all 0.2s ease; position: relative;
         }
-
-        .option-card.selected {
-            border-color: var(--fubon-blue);
-            background-color: #f0f9fc;
-            box-shadow: 0 4px 12px rgba(0, 118, 169, 0.15);
-        }
-
-        .option-card .icon { font-size: 24px; margin-bottom: 8px; display: block; }
-        .option-card .title { font-size: 14px; font-weight: bold; color: var(--text-dark); }
+        /* Removed .locked style override so all cards look the same */
+        .option-card.selected { border-color: var(--fubon-blue); background-color: #f0f9fc; }
+        
         .option-card .check-mark {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            width: 18px;
-            height: 18px;
-            background: var(--fubon-blue);
-            border-radius: 50%;
-            color: white;
-            font-size: 10px;
-            display: none;
-            align-items: center;
-            justify-content: center;
+            position: absolute; top: 8px; right: 8px; width: 18px; height: 18px;
+            background: var(--fubon-blue); border-radius: 50%; color: white; font-size: 10px;
+            display: none; align-items: center; justify-content: center;
         }
         .option-card.selected .check-mark { display: flex; }
+        .icon { font-size: 24px; display: block; margin-bottom: 5px; }
+        .card-title { font-weight: bold; font-size: 14px; }
+        .card-sub { font-size: 10px; color: #888; }
 
-        /* Disable base option style */
-        .option-card.locked {
-            opacity: 0.8;
-            cursor: default;
-            background: #f8f9fa;
-        }
-
-        /* System Log */
+        /* System Log (Mapping Engine) */
         .system-log {
             margin-top: 20px;
             background: #2d3436;
@@ -136,288 +143,389 @@
             border-radius: 8px;
             font-family: monospace;
             font-size: 11px;
-            line-height: 1.4;
+            line-height: 1.5;
+            border: 1px dashed #555;
         }
-        .log-title { color: #fff; border-bottom: 1px solid #555; padding-bottom: 5px; margin-bottom: 5px; display: block;}
+        .log-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #555; padding-bottom: 5px; margin-bottom: 8px;
+        }
+        .log-title { color: #fff; font-weight: bold; }
+        .demo-tag { background: #e74c3c; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
 
-        /* Contracts Preview */
-        .contracts-preview {
-            margin-top: 15px;
-            padding: 12px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border-left: 4px solid var(--fubon-teal);
+        /* Step 3: Privacy */
+        .privacy-box {
+            height: 350px; background: #f8f9fa; border: 1px solid #eee; border-radius: 8px;
+            padding: 15px; overflow-y: scroll; font-size: 13px; color: #555; margin-bottom: 15px; line-height: 1.6;
         }
-        .contracts-preview h4 { margin: 0 0 8px; font-size: 13px; color: #555; }
-        .tag {
-            display: inline-block;
-            background: #e1ecf4;
-            color: #2c5e77;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            margin-right: 4px;
-            margin-bottom: 4px;
+        .privacy-highlight { color: var(--fubon-blue); font-weight: bold; }
+        
+        /* Step 4: Dual Upload */
+        .upload-section-title { font-size: 14px; font-weight: bold; color: var(--fubon-blue); margin: 15px 0 8px; }
+        .upload-zone {
+            border: 2px dashed #ccc; border-radius: 12px; height: 140px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: #fafafa; position: relative; transition: all 0.3s; overflow: hidden; margin-bottom: 10px;
         }
-
-        /* Action Button */
-        .btn-action {
-            background: var(--fubon-blue);
-            color: white;
-            border: none;
-            width: 100%;
-            padding: 15px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 12px;
-            margin-top: 15px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 118, 169, 0.3);
+        .upload-zone.error { border-color: var(--error-red); background: #fff0f0; animation: shake 0.5s; }
+        .upload-zone.success { border-color: var(--success-green); background: #f6ffed; }
+        .upload-zone img { max-width: 90%; max-height: 90%; object-fit: contain; display: none; }
+        .upload-placeholder { text-align: center; color: #999; font-size: 12px; }
+        .upload-icon { font-size: 24px; display: block; margin-bottom: 5px; }
+        .status-badge {
+            position: absolute; top: 10px; right: 10px; 
+            padding: 4px 8px; border-radius: 4px; font-size: 10px; color: white; display: none;
         }
-        .btn-action:hover { background: #006390; }
-
-        /* Modal for Futures Quiz */
-        .modal-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
+        
+        /* Error Toast */
+        .error-toast {
+            background: rgba(255, 77, 79, 0.95); color: white; padding: 12px 20px;
+            border-radius: 30px; font-size: 14px; position: absolute; bottom: 100px; left: 50%;
+            transform: translateX(-50%); width: 80%; text-align: center; display: none;
+            box-shadow: 0 10px 20px rgba(255, 77, 79, 0.3); z-index: 10;
         }
-        .modal {
-            background: white;
-            width: 85%;
-            padding: 20px;
-            border-radius: 16px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-        .modal h3 { margin-top: 0; color: var(--fubon-blue); font-size: 18px;}
-        .quiz-item {
-            background: #f0f9fc;
-            padding: 12px;
-            border-radius: 8px;
-            margin: 15px 0;
-            text-align: left;
-            font-size: 13px;
-            color: #444;
-        }
-        .btn-confirm {
-            background: var(--fubon-teal);
-            color: white;
-            border: none;
-            padding: 10px 24px;
-            border-radius: 20px;
-            margin-top: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
+        .scan-line {
+            position: absolute; width: 100%; height: 2px; background: var(--fubon-teal);
+            top: 0; left: 0; display: none; box-shadow: 0 0 10px var(--fubon-teal);
         }
 
+        @keyframes scan { 0% {top:0;} 100% {top:100%;} }
+        @keyframes shake { 0% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} 100% {transform: translateX(0);} }
+
+        /* Demo Controls */
+        .demo-controls { display: flex; gap: 5px; margin-top: 15px; flex-wrap: wrap; }
+        .btn-demo { flex: 1; padding: 8px; font-size: 11px; border: none; border-radius: 6px; cursor: pointer; color: white; min-width: 80px; }
     </style>
 </head>
 <body>
 
     <div class="mobile-container">
+        
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
         <div class="header">
-            <h2>富邦證券開戶 3.0</h2>
-            <p>客製化您的投資組合</p>
-        </div>
-
-        <div class="progress-container">
-            <span class="step-label">Step 1: 選擇業務 (原子化組裝)</span>
-            <div class="progress-bar">
-                <div class="progress-fill"></div>
+            <div class="header-left">
+                <button class="btn-back" id="btn-back" onclick="goBack()">❮</button>
+                <h2 id="page-title">開戶準備</h2>
             </div>
+            <span class="step-indicator" id="step-number">1 / 4</span>
         </div>
 
-        <div class="content">
-            <div class="question">Hi，您未來的投資計畫是什麼？</div>
+        <div id="step-1" class="step-page active">
+            <div class="title-lg">開戶前準備</div>
+            <p class="desc">請確認您已備妥以下資料：</p>
+            
+            <div class="info-card">
+                <div class="info-content">
+                    <span class="info-icon">🪪</span>
+                    <div class="info-text">
+                        <strong>身分證 (正本)</strong>
+                        <span>需為最新版本</span>
+                    </div>
+                </div>
+            </div>
+            <div class="info-card">
+                <div class="info-content">
+                    <span class="info-icon">🚙</span>
+                    <div class="info-text">
+                        <strong>第二證件</strong>
+                        <span>健保卡或駕照</span>
+                    </div>
+                </div>
+            </div>
+            <div class="info-card">
+                <div class="info-content">
+                    <span class="info-icon">🏦</span>
+                    <div class="info-text">
+                        <strong>北富銀行帳號</strong>
+                        <span>證券款項約定使用</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-label">資格確認</div>
+            
+            <div class="info-card">
+                <div class="info-content">
+                    <div class="info-text">
+                        <strong>無他國公民或稅務身分</strong>
+                        <span>我僅具備台灣稅務居民身分</span>
+                    </div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="sw-tax">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="info-card">
+                <div class="info-content">
+                    <div class="info-text">
+                        <strong>年齡確認</strong>
+                        <span>我尚未年滿 80 歲</span>
+                    </div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="sw-age">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <button class="btn-primary" onclick="goToStep(2)">開始開戶</button>
+        </div>
+
+        <div id="step-2" class="step-page">
+            <div class="title-lg">Hi，您未來的投資計畫？</div>
+            <p class="desc">勾選您感興趣的項目，我們將為您配置最佳帳戶組合。</p>
 
             <div class="options-grid">
-                <div class="option-card selected locked">
-                    <span class="check-mark">✓</span>
-                    <span class="icon">🇹🇼</span>
-                    <span class="title">台股 / 存股</span>
-                    <span style="font-size:10px; color:#888;">ETF、定期定額</span>
+                <div class="option-card selected" onclick="toggleOption('spot', this)">
+                    <span class="check-mark">✓</span> <span class="icon">🇹🇼</span>
+                    <div class="card-title">台股 / 存股</div> <div class="card-sub">ETF、定期定額</div>
                 </div>
-
                 <div class="option-card" onclick="toggleOption('sub', this)">
-                    <span class="check-mark">✓</span>
-                    <span class="icon">🇺🇸</span>
-                    <span class="title">美股 / 海外</span>
-                    <span style="font-size:10px; color:#888;">Apple、美債</span>
+                    <span class="check-mark">✓</span> <span class="icon">🇺🇸</span>
+                    <div class="card-title">美股 / 海外</div> <div class="card-sub">Apple、美債</div>
                 </div>
-
                 <div class="option-card" onclick="toggleOption('wealth', this)">
-                    <span class="check-mark">✓</span>
-                    <span class="icon">💰</span>
-                    <span class="title">基金 / 債券</span>
-                    <span style="font-size:10px; color:#888;">股票出借賺利息</span>
+                    <span class="check-mark">✓</span> <span class="icon">💰</span>
+                    <div class="card-title">基金 / 債券</div> <div class="card-sub">股票出借賺利息</div>
                 </div>
-
                 <div class="option-card" onclick="toggleOption('deriv', this)">
-                    <span class="check-mark">✓</span>
-                    <span class="icon">⚡</span>
-                    <span class="title">權證 / ETN</span>
-                    <span style="font-size:10px; color:#888;">小資金槓桿交易</span>
+                    <span class="check-mark">✓</span> <span class="icon">⚡</span>
+                    <div class="card-title">權證 / ETN</div> <div class="card-sub">小資金槓桿交易</div>
                 </div>
-
                 <div class="option-card" onclick="toggleOption('future', this)">
-                    <span class="check-mark">✓</span>
-                    <span class="icon">📉</span>
-                    <span class="title">期貨 / 選擇權</span>
-                    <span style="font-size:10px; color:#888;">台指期、避險</span>
+                    <span class="check-mark">✓</span> <span class="icon">📉</span>
+                    <div class="card-title">期貨 / 選擇權</div> <div class="card-sub">台指期、避險</div>
                 </div>
-
                 <div class="option-card" onclick="toggleOption('advisor', this)">
-                    <span class="check-mark">✓</span>
-                    <span class="icon">🎓</span>
-                    <span class="title">專家觀點</span>
-                    <span style="font-size:10px; color:#888;">每日研究報告</span>
-                </div>
-            </div>
-
-            <div class="contracts-preview">
-                <h4>準備生成文件 (智慧整併)：</h4>
-                <div id="services-tags">
-                    <span class="tag">證券開戶契約</span>
+                    <span class="check-mark">✓</span> <span class="icon">🎓</span>
+                    <div class="card-title">專家觀點</div> <div class="card-sub">每日研究報告</div>
                 </div>
             </div>
 
             <div class="system-log">
-                <span class="log-title">⚙️ 32種組合 Mapping 引擎</span>
-                <div id="log-output">
-                    Initializing...
+                <div class="log-header">
+                    <span class="log-title">⚙️ 32種組合 Mapping 引擎</span>
+                    <span class="demo-tag">僅示意 (Demo Only)</span>
                 </div>
+                <div id="log-output">Initializing...</div>
             </div>
-
-            <button class="btn-action" onclick="alert('Demo 結束：進入 OCR 證件掃描 (所有勾選業務共用資料)。')">去開通</button>
+            
+            <button class="btn-primary" onclick="goToStep(3)">下一步</button>
         </div>
-        
-        <div id="quiz-modal" class="modal-overlay">
-            <div class="modal">
-                <h3>期貨交易認知確認</h3>
-                <p style="font-size:13px; color:#666; margin-bottom:10px;">依據法規，開通期貨需確認您了解風險。</p>
-                
-                <div class="quiz-item">
-                    <strong>觀念 1：</strong><br>
-                    期貨交易具有高槓桿特性，可能產生大於原始保證金之損失。<br>
-                    <label style="display:block; margin-top:8px; color:var(--fubon-blue); cursor:pointer;">
-                        <input type="checkbox" id="quiz-check"> 我已了解並同意風險
-                    </label>
-                </div>
 
-                <button class="btn-confirm" onclick="confirmFutures()">確認並開通</button>
-                <button style="background:none; border:none; color:#999; margin-top:10px; font-size:12px; cursor:pointer;" onclick="cancelFutures()">取消</button>
+        <div id="step-3" class="step-page">
+            <div class="title-lg">隱私權保護聲明</div>
+            <p class="desc">請閱讀我們如何保護您的個人資料。</p>
+
+            <div class="privacy-box">
+                <h4>一、個人資料之蒐集</h4>
+                <p>本公司基於開戶及金融服務之需求，將蒐集您的姓名、身分證字號、聯絡方式等資料...</p>
+                <h4>二、您的權利</h4>
+                <p class="privacy-highlight">您可以隨時請求查詢、更正或刪除您的個人資料。</p>
+                <br><br>
             </div>
+
+            <label class="checkbox-card">
+                <input type="checkbox" id="chk-privacy" onchange="checkStep3()">
+                <div class="info-content">
+                    <div class="info-text">
+                        <strong>我已閱讀並同意</strong>
+                        <span>上述隱私權政策條款</span>
+                    </div>
+                </div>
+            </label>
+
+            <button class="btn-primary" id="btn-step3" disabled onclick="goToStep(4)">同意並繼續</button>
+        </div>
+
+        <div id="step-4" class="step-page">
+            <div class="title-lg">上傳身分證</div>
+            <p class="desc">請依序拍攝身分證的正、反面，確保文字清晰。</p>
+
+            <div class="upload-section-title">身分證 (正面)</div>
+            <div class="upload-zone" id="zone-front">
+                <div class="upload-placeholder">
+                    <span class="upload-icon">📷</span>
+                    <span>拍攝正面</span>
+                </div>
+                <img id="img-front" src="" alt="Front">
+                <div class="scan-line" id="scan-front"></div>
+                <span class="status-badge" style="background:#52c41a;">辨識成功</span>
+            </div>
+
+            <div class="upload-section-title">身分證 (反面)</div>
+            <div class="upload-zone" id="zone-back">
+                <div class="upload-placeholder">
+                    <span class="upload-icon">📷</span>
+                    <span>拍攝反面</span>
+                </div>
+                <img id="img-back" src="" alt="Back">
+                <div class="scan-line" id="scan-back"></div>
+                <span class="status-badge" style="background:#52c41a;">辨識成功</span>
+            </div>
+
+            <div class="error-toast" id="error-toast"></div>
+
+            <div class="demo-controls">
+                <button class="btn-demo" style="background:#ff4d4f;" onclick="simulate('front', 'error')">模擬：正面反光</button>
+                <button class="btn-demo" style="background:#52c41a;" onclick="simulate('front', 'success')">模擬：正面成功</button>
+                <button class="btn-demo" style="background:#52c41a;" onclick="simulate('back', 'success')">模擬：反面成功</button>
+            </div>
+
+            <button class="btn-primary" id="btn-step4" disabled onclick="alert('Demo 完成！資料已自動帶入填寫頁。')">資料確認 (Next)</button>
         </div>
 
     </div>
 
     <script>
-        // State for 6 Atoms
-        let state = {
-            spot: true,   // 現貨 (Locked)
-            sub: false,   // 複委託
-            wealth: false,// 財管
-            deriv: false, // 衍商
-            future: false,// 期貨
-            advisor: false// 投顧
-        };
+        let currentStep = 1;
+        // 更新：State 加入 spot (台股)
+        let state = { spot: true, sub: false, wealth: false, deriv: false, future: false, advisor: false };
+        let uploadStatus = { front: false, back: false };
 
-        function toggleOption(type, element) {
-            // Futures Logic (Quiz)
-            if (type === 'future' && !state.future) {
-                document.getElementById('quiz-modal').style.display = 'flex';
-                return; // Wait for modal
-            }
-
-            // Normal Toggle
-            state[type] = !state[type];
-            updateUI(type, element);
-        }
-
-        // Futures Modal Handlers
-        function confirmFutures() {
-            const checkbox = document.getElementById('quiz-check');
-            if(!checkbox.checked) {
-                alert("請先勾選「我已了解並同意風險」");
-                return;
-            }
-            document.getElementById('quiz-modal').style.display = 'none';
-            state.future = true;
+        // Navigation
+        function goToStep(step) {
+            document.querySelector('.step-page.active').classList.remove('active');
+            document.getElementById(`step-${step}`).classList.add('active');
             
-            // Find the future card and update UI
-            const cards = document.querySelectorAll('.option-card');
-            cards.forEach(card => {
-                if(card.querySelector('.title').innerText === '期貨') {
-                    card.classList.add('selected');
-                }
-            });
-            calculateLogic();
+            currentStep = step;
+            updateHeader(step);
+
+            if(step === 2) calculateLogic();
         }
 
-        function cancelFutures() {
-            document.getElementById('quiz-modal').style.display = 'none';
-        }
-
-        function updateUI(type, element) {
-            if (state[type]) {
-                element.classList.add('selected');
-            } else {
-                element.classList.remove('selected');
+        function goBack() {
+            if (currentStep > 1) {
+                goToStep(currentStep - 1);
             }
+        }
+
+        function updateHeader(step) {
+            document.getElementById('step-number').innerText = `${step} / 4`;
+            document.getElementById('progress-fill').style.width = `${step * 25}%`;
+
+            const titles = ["", "開戶準備", "投資計畫", "條款簽署", "證件上傳"];
+            document.getElementById('page-title').innerText = titles[step];
+
+            const backBtn = document.getElementById('btn-back');
+            if (step > 1) {
+                backBtn.style.display = 'block';
+            } else {
+                backBtn.style.display = 'none';
+            }
+        }
+
+        // Step 2 Logic (Mapping Engine Updated for Spot)
+        function toggleOption(type, element) {
+            state[type] = !state[type];
+            if(state[type]) element.classList.add('selected');
+            else element.classList.remove('selected');
+            
             calculateLogic();
         }
 
         function calculateLogic() {
             const output = document.getElementById('log-output');
-            const tagsContainer = document.getElementById('services-tags');
             
-            let tags = ["證券開戶契約"];
-            let serverLog = [];
-
-            // 1. Build Atoms
-            if (state.sub) tags.push("複委託契約");
-            if (state.wealth) tags.push("財管信託契約(含KYC)");
-            if (state.deriv) tags.push("衍商契約");
-            if (state.future) tags.push("期貨風險預告書");
-            if (state.advisor) tags.push("投顧會員規章");
-
-            // 2. Simulate Mapping Logic (referencing the 32-combo table)
-            // This logic simply counts active atoms to simulate complexity handling
             let activeCount = 0;
+            // Count includes Spot now
+            if(state.spot) activeCount++;
             if(state.sub) activeCount++;
             if(state.wealth) activeCount++;
             if(state.deriv) activeCount++;
             if(state.future) activeCount++;
             if(state.advisor) activeCount++;
 
-            let comboID = "1"; // Default Spot only
-            if (activeCount === 5) comboID = "32 (全開)"; 
-            else if (activeCount === 0) comboID = "1 (純現貨)";
-            else if (state.sub && !state.wealth && !state.deriv && !state.future && !state.advisor) comboID = "2 (現貨+複委託)";
-            else if (!state.sub && state.wealth && !state.deriv && !state.future && !state.advisor) comboID = "3 (現貨+財管)";
-            else if (state.sub && state.wealth && state.deriv && !state.future && !state.advisor) comboID = "17 (現+複+財+衍)";
-            else comboID = `Dynamic #${Math.floor(Math.random() * 20) + 5}`; // Simulating lookups
+            let comboID = "Invalid"; 
+            
+            // Logic mapping simulation
+            if (activeCount === 0) comboID = "None (未選擇)";
+            else if (!state.spot) comboID = "Error (需含現貨)"; // Demo logic: must have spot
+            else if (activeCount === 6) comboID = "32 (全開)"; 
+            else if (state.spot && activeCount === 1) comboID = "1 (純現貨)";
+            else if (state.spot && state.sub && activeCount === 2) comboID = "2 (現貨+複委託)";
+            else if (state.spot && state.wealth && activeCount === 2) comboID = "3 (現貨+財管)";
+            else if (state.spot && state.sub && state.wealth && state.deriv && activeCount === 4) comboID = "17 (現+複+財+衍)";
+            else comboID = `Dynamic #${Math.floor(Math.random() * 20) + 5}`; 
 
-            // Render Tags
-            tagsContainer.innerHTML = tags.map(t => `<span class="tag">${t}</span>`).join('');
+            // Contracts
+            let contracts = [];
+            if (state.spot) contracts.push("證券開戶契約");
+            if (state.sub) contracts.push("複委託契約");
+            if (state.wealth) contracts.push("財管信託契約");
+            if (state.deriv) contracts.push("衍商契約");
+            if (state.future) contracts.push("期貨風險預告書");
+            if (state.advisor) contracts.push("投顧會員規章");
 
             // Render Log
             output.innerHTML = `
-                Active Atoms: <span style="color:#fff">[現貨] ${state.sub ? '+[複委託]' : ''} ${state.wealth ? '+[財管]' : ''} ${state.deriv ? '+[衍商]' : ''} ${state.future ? '+[期貨]' : ''} ${state.advisor ? '+[投顧]' : ''}</span><br>
-                Mapping Result: <b style="color:#ffcc00">Combo #${comboID}</b><br>
-                <span style="color:#aaa">>>> ${state.wealth ? 'Loading KYC Module...' : 'KYC Skipped'}</span><br>
-                <span style="color:#aaa">>>> ${state.advisor ? '投顧 API 排程: 待 T+1 啟用' : ''}</span>
+                Active Modules: <span style="color:#fff">${state.spot ? '[現貨]' : ''} ${state.sub ? '+[複委託]' : ''} ${state.wealth ? '+[財管]' : ''} ${state.deriv ? '+[衍商]' : ''} ${state.future ? '+[期貨]' : ''} ${state.advisor ? '+[投顧]' : ''}</span><br>
+                System Mapping: <b style="color:#ffcc00">Combo #${comboID}</b><br>
+                Required Contracts: <span style="color:#aaa">${contracts.length} 份</span><br>
+                <span style="color:#aaa">>>> ${state.wealth ? 'Loading KYC Module...' : 'KYC Skipped'}</span>
             `;
         }
 
-        // Init
-        calculateLogic();
+        // Step 3 Logic
+        function checkStep3() {
+            document.getElementById('btn-step3').disabled = !document.getElementById('chk-privacy').checked;
+        }
+
+        // Step 4 Logic
+        function simulate(side, result) {
+            const zone = document.getElementById(`zone-${side}`);
+            const img = document.getElementById(`img-${side}`);
+            const scanLine = document.getElementById(`scan-${side}`);
+            const placeholder = zone.querySelector('.upload-placeholder');
+            const badge = zone.querySelector('.status-badge');
+            const toast = document.getElementById('error-toast');
+            
+            zone.classList.remove('error', 'success');
+            badge.style.display = 'none';
+            toast.style.display = 'none';
+            placeholder.style.display = 'none';
+            img.style.display = 'block';
+            
+            img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='140' viewBox='0 0 300 140'%3E%3Crect width='300' height='140' fill='%23eee'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23aaa'%3EID Card Image%3C/text%3E%3C/svg%3E";
+            img.style.opacity = '0.6';
+
+            scanLine.style.display = 'block';
+            scanLine.style.animation = 'scan 1.5s infinite linear';
+
+            setTimeout(() => {
+                scanLine.style.display = 'none';
+
+                if (result === 'error') {
+                    zone.classList.add('error');
+                    img.style.opacity = '0.4';
+                    toast.innerHTML = "⚠️ <b>偵測到強烈反光！</b><br>OCR 無法讀取，請調整角度重拍。";
+                    toast.style.display = 'block';
+                    uploadStatus[side] = false;
+                } else {
+                    zone.classList.add('success');
+                    img.style.opacity = '1';
+                    badge.style.display = 'block';
+                    badge.innerText = "辨識完成";
+                    uploadStatus[side] = true;
+                }
+                checkAllUploads();
+            }, 1500);
+        }
+
+        function checkAllUploads() {
+            const btn = document.getElementById('btn-step4');
+            if (uploadStatus.front && uploadStatus.back) {
+                btn.disabled = false;
+                btn.innerText = "資料確認 (下一步)";
+                btn.style.background = "#52c41a";
+            } else {
+                btn.disabled = true;
+                btn.innerText = "請完成雙面拍攝";
+                btn.style.background = "#0076a9";
+            }
+        }
     </script>
 </body>
 </html>
