@@ -6,13 +6,13 @@
     <title>富邦證券 3.0 全流程 Demo (UI一致版)</title>
     <style>
         :root {
-            --fubon-blue: #0076a9;
-            --fubon-teal: #00a0b0;
-            --bg-gray: #f5f7fa;
-            --text-dark: #333;
-            --text-light: #666;
-            --error-red: #ff4d4f;
-            --success-green: #52c41a;
+            --fubon-blue: #0093C1;
+            --fubon-teal: #00A59B;
+            --bg-gray: #ffffff;
+            --text-dark: #0C0E1F;
+            --text-light: #AEAFB4;
+            --error-red: #EB4751;
+            --success-green: #00A59B;
         }
 
         body {
@@ -57,7 +57,7 @@
 
         /* Progress Bar */
         .progress-bar { height: 4px; background: #eee; width: 100%; }
-        .progress-fill { height: 100%; width: 25%; background: var(--fubon-teal); transition: width 0.3s ease; }
+        .progress-fill { height: 100%; width: 25%; background: var(--fubon-blue); transition: width 0.3s ease; }
 
         /* Pages */
         .step-page {
@@ -179,10 +179,10 @@
         
         /* Error Toast */
         .error-toast {
-            background: rgba(255, 77, 79, 0.95); color: white; padding: 12px 20px;
+            background: rgba(235, 71, 81, 0.95); color: white; padding: 12px 20px;
             border-radius: 30px; font-size: 14px; position: absolute; bottom: 100px; left: 50%;
             transform: translateX(-50%); width: 80%; text-align: center; display: none;
-            box-shadow: 0 10px 20px rgba(255, 77, 79, 0.3); z-index: 10;
+            box-shadow: 0 10px 20px rgba(76, 17, 17, 0.3); z-index: 10;
         }
         .scan-line {
             position: absolute; width: 100%; height: 2px; background: var(--fubon-teal);
@@ -352,7 +352,7 @@
                 </div>
                 <img id="img-front" src="" alt="Front">
                 <div class="scan-line" id="scan-front"></div>
-                <span class="status-badge" style="background:#52c41a;">辨識成功</span>
+                <span class="status-badge" style="background:#00A59B;">辨識成功</span>
             </div>
 
             <div class="upload-section-title">身分證 (反面)</div>
@@ -363,15 +363,15 @@
                 </div>
                 <img id="img-back" src="" alt="Back">
                 <div class="scan-line" id="scan-back"></div>
-                <span class="status-badge" style="background:#52c41a;">辨識成功</span>
+                <span class="status-badge" style="background:#00A59B;">辨識成功</span>
             </div>
 
             <div class="error-toast" id="error-toast"></div>
 
             <div class="demo-controls">
-                <button class="btn-demo" style="background:#ff4d4f;" onclick="simulate('front', 'error')">模擬：正面反光</button>
-                <button class="btn-demo" style="background:#52c41a;" onclick="simulate('front', 'success')">模擬：正面成功</button>
-                <button class="btn-demo" style="background:#52c41a;" onclick="simulate('back', 'success')">模擬：反面成功</button>
+                <button class="btn-demo" style="background:#EB4751;" onclick="simulate('front', 'error')">模擬：正面反光</button>
+                <button class="btn-demo" style="background:#00A59B;" onclick="simulate('front', 'success')">模擬：正面成功</button>
+                <button class="btn-demo" style="background:#00A59B;" onclick="simulate('back', 'success')">模擬：反面成功</button>
             </div>
 
             <button class="btn-primary" id="btn-step4" disabled onclick="alert('Demo 完成！資料已自動帶入填寫頁。')">資料確認 (Next)</button>
@@ -519,7 +519,7 @@
             if (uploadStatus.front && uploadStatus.back) {
                 btn.disabled = false;
                 btn.innerText = "資料確認 (下一步)";
-                btn.style.background = "#52c41a";
+                btn.style.background = "#00A59B";
             } else {
                 btn.disabled = true;
                 btn.innerText = "請完成雙面拍攝";
