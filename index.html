@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>富邦證券 3.0 原子化開戶 Demo</title>
+    <style>
+        :root {
+            --fubon-blue: #0076a9;
+            --fubon-teal: #00a0b0;
+            --bg-gray: #f5f7fa;
+            --text-dark: #333;
+            --card-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #eef2f5;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* 手機模擬框 */
+        .mobile-container {
+            width: 100%;
+            max-width: 390px;
+            background: #fff;
+            height: 844px; /* iPhone 12/13 height */
+            border-radius: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border: 8px solid #333;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--fubon-blue), var(--fubon-teal));
+            color: white;
+            padding: 40px 20px 20px;
+            text-align: left;
+        }
+
+        .header h2 { margin: 0; font-size: 20px; }
+        .header p { margin: 5px 0 0; font-size: 14px; opacity: 0.9; }
+
+        /* Progress Bar */
+        .progress-container {
+            padding: 15px 20px;
+            background: #fff;
+            border-bottom: 1px solid #eee;
+        }
+        .step-label { font-size: 12px; color: var(--fubon-blue); font-weight: bold; margin-bottom: 5px; display: block;}
+        .progress-bar { height: 4px; background: #eee; border-radius: 2px; overflow: hidden; }
+        .progress-fill { height: 100%; width: 25%; background: var(--fubon-teal); }
+
+        /* Content */
+        .content {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .question {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+        }
+
+        /* Cards Grid - Updated for 6 items */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .option-card {
+            background: #fff;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 90px;
+        }
+
+        .option-card.selected {
+            border-color: var(--fubon-blue);
+            background-color: #f0f9fc;
+            box-shadow: 0 4px 12px rgba(0, 118, 169, 0.15);
+        }
+
+        .option-card .icon { font-size: 24px; margin-bottom: 8px; display: block; }
+        .option-card .title { font-size: 14px; font-weight: bold; color: var(--text-dark); }
+        .option-card .check-mark {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 18px;
+            height: 18px;
+            background: var(--fubon-blue);
+            border-radius: 50%;
+            color: white;
+            font-size: 10px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .option-card.selected .check-mark { display: flex; }
+
+        /* Disable base option style */
+        .option-card.locked {
+            opacity: 0.8;
+            cursor: default;
+            background: #f8f9fa;
+        }
+
+        /* System Log */
+        .system-log {
+            margin-top: 20px;
+            background: #2d3436;
+            color: #00ff9d;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+        .log-title { color: #fff; border-bottom: 1px solid #555; padding-bottom: 5px; margin-bottom: 5px; display: block;}
+
+        /* Contracts Preview */
+        .contracts-preview {
+            margin-top: 15px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid var(--fubon-teal);
+        }
+        .contracts-preview h4 { margin: 0 0 8px; font-size: 13px; color: #555; }
+        .tag {
+            display: inline-block;
+            background: #e1ecf4;
+            color: #2c5e77;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-right: 4px;
+            margin-bottom: 4px;
+        }
+
+        /* Action Button */
+        .btn-action {
+            background: var(--fubon-blue);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 12px;
+            margin-top: 15px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 118, 169, 0.3);
+        }
+        .btn-action:hover { background: #006390; }
+
+        /* Modal for Futures Quiz */
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .modal {
+            background: white;
+            width: 85%;
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .modal h3 { margin-top: 0; color: var(--fubon-blue); font-size: 18px;}
+        .quiz-item {
+            background: #f0f9fc;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: left;
+            font-size: 13px;
+            color: #444;
+        }
+        .btn-confirm {
+            background: var(--fubon-teal);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 20px;
+            margin-top: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="mobile-container">
+        <div class="header">
+            <h2>富邦證券開戶 3.0</h2>
+            <p>客製化您的投資組合</p>
+        </div>
+
+        <div class="progress-container">
+            <span class="step-label">Step 1: 選擇業務 (原子化組裝)</span>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="question">Hi，您未來的投資計畫是什麼？</div>
+
+            <div class="options-grid">
+                <div class="option-card selected locked">
+                    <span class="check-mark">✓</span>
+                    <span class="icon">🇹🇼</span>
+                    <span class="title">台股 / 存股</span>
+                    <span style="font-size:10px; color:#888;">ETF、定期定額</span>
+                </div>
+
+                <div class="option-card" onclick="toggleOption('sub', this)">
+                    <span class="check-mark">✓</span>
+                    <span class="icon">🇺🇸</span>
+                    <span class="title">美股 / 海外</span>
+                    <span style="font-size:10px; color:#888;">Apple、美債</span>
+                </div>
+
+                <div class="option-card" onclick="toggleOption('wealth', this)">
+                    <span class="check-mark">✓</span>
+                    <span class="icon">💰</span>
+                    <span class="title">基金 / 債券</span>
+                    <span style="font-size:10px; color:#888;">股票出借賺利息</span>
+                </div>
+
+                <div class="option-card" onclick="toggleOption('deriv', this)">
+                    <span class="check-mark">✓</span>
+                    <span class="icon">⚡</span>
+                    <span class="title">權證 / ETN</span>
+                    <span style="font-size:10px; color:#888;">小資金槓桿交易</span>
+                </div>
+
+                <div class="option-card" onclick="toggleOption('future', this)">
+                    <span class="check-mark">✓</span>
+                    <span class="icon">📉</span>
+                    <span class="title">期貨 / 選擇權</span>
+                    <span style="font-size:10px; color:#888;">台指期、避險</span>
+                </div>
+
+                <div class="option-card" onclick="toggleOption('advisor', this)">
+                    <span class="check-mark">✓</span>
+                    <span class="icon">🎓</span>
+                    <span class="title">專家觀點</span>
+                    <span style="font-size:10px; color:#888;">每日研究報告</span>
+                </div>
+            </div>
+
+            <div class="contracts-preview">
+                <h4>準備生成文件 (智慧整併)：</h4>
+                <div id="services-tags">
+                    <span class="tag">證券開戶契約</span>
+                </div>
+            </div>
+
+            <div class="system-log">
+                <span class="log-title">⚙️ 32種組合 Mapping 引擎</span>
+                <div id="log-output">
+                    Initializing...
+                </div>
+            </div>
+
+            <button class="btn-action" onclick="alert('Demo 結束：進入 OCR 證件掃描 (所有勾選業務共用資料)。')">去開通</button>
+        </div>
+        
+        <div id="quiz-modal" class="modal-overlay">
+            <div class="modal">
+                <h3>期貨交易認知確認</h3>
+                <p style="font-size:13px; color:#666; margin-bottom:10px;">依據法規，開通期貨需確認您了解風險。</p>
+                
+                <div class="quiz-item">
+                    <strong>觀念 1：</strong><br>
+                    期貨交易具有高槓桿特性，可能產生大於原始保證金之損失。<br>
+                    <label style="display:block; margin-top:8px; color:var(--fubon-blue); cursor:pointer;">
+                        <input type="checkbox" id="quiz-check"> 我已了解並同意風險
+                    </label>
+                </div>
+
+                <button class="btn-confirm" onclick="confirmFutures()">確認並開通</button>
+                <button style="background:none; border:none; color:#999; margin-top:10px; font-size:12px; cursor:pointer;" onclick="cancelFutures()">取消</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // State for 6 Atoms
+        let state = {
+            spot: true,   // 現貨 (Locked)
+            sub: false,   // 複委託
+            wealth: false,// 財管
+            deriv: false, // 衍商
+            future: false,// 期貨
+            advisor: false// 投顧
+        };
+
+        function toggleOption(type, element) {
+            // Futures Logic (Quiz)
+            if (type === 'future' && !state.future) {
+                document.getElementById('quiz-modal').style.display = 'flex';
+                return; // Wait for modal
+            }
+
+            // Normal Toggle
+            state[type] = !state[type];
+            updateUI(type, element);
+        }
+
+        // Futures Modal Handlers
+        function confirmFutures() {
+            const checkbox = document.getElementById('quiz-check');
+            if(!checkbox.checked) {
+                alert("請先勾選「我已了解並同意風險」");
+                return;
+            }
+            document.getElementById('quiz-modal').style.display = 'none';
+            state.future = true;
+            
+            // Find the future card and update UI
+            const cards = document.querySelectorAll('.option-card');
+            cards.forEach(card => {
+                if(card.querySelector('.title').innerText === '期貨') {
+                    card.classList.add('selected');
+                }
+            });
+            calculateLogic();
+        }
+
+        function cancelFutures() {
+            document.getElementById('quiz-modal').style.display = 'none';
+        }
+
+        function updateUI(type, element) {
+            if (state[type]) {
+                element.classList.add('selected');
+            } else {
+                element.classList.remove('selected');
+            }
+            calculateLogic();
+        }
+
+        function calculateLogic() {
+            const output = document.getElementById('log-output');
+            const tagsContainer = document.getElementById('services-tags');
+            
+            let tags = ["證券開戶契約"];
+            let serverLog = [];
+
+            // 1. Build Atoms
+            if (state.sub) tags.push("複委託契約");
+            if (state.wealth) tags.push("財管信託契約(含KYC)");
+            if (state.deriv) tags.push("衍商契約");
+            if (state.future) tags.push("期貨風險預告書");
+            if (state.advisor) tags.push("投顧會員規章");
+
+            // 2. Simulate Mapping Logic (referencing the 32-combo table)
+            // This logic simply counts active atoms to simulate complexity handling
+            let activeCount = 0;
+            if(state.sub) activeCount++;
+            if(state.wealth) activeCount++;
+            if(state.deriv) activeCount++;
+            if(state.future) activeCount++;
+            if(state.advisor) activeCount++;
+
+            let comboID = "1"; // Default Spot only
+            if (activeCount === 5) comboID = "32 (全開)"; 
+            else if (activeCount === 0) comboID = "1 (純現貨)";
+            else if (state.sub && !state.wealth && !state.deriv && !state.future && !state.advisor) comboID = "2 (現貨+複委託)";
+            else if (!state.sub && state.wealth && !state.deriv && !state.future && !state.advisor) comboID = "3 (現貨+財管)";
+            else if (state.sub && state.wealth && state.deriv && !state.future && !state.advisor) comboID = "17 (現+複+財+衍)";
+            else comboID = `Dynamic #${Math.floor(Math.random() * 20) + 5}`; // Simulating lookups
+
+            // Render Tags
+            tagsContainer.innerHTML = tags.map(t => `<span class="tag">${t}</span>`).join('');
+
+            // Render Log
+            output.innerHTML = `
+                Active Atoms: <span style="color:#fff">[現貨] ${state.sub ? '+[複委託]' : ''} ${state.wealth ? '+[財管]' : ''} ${state.deriv ? '+[衍商]' : ''} ${state.future ? '+[期貨]' : ''} ${state.advisor ? '+[投顧]' : ''}</span><br>
+                Mapping Result: <b style="color:#ffcc00">Combo #${comboID}</b><br>
+                <span style="color:#aaa">>>> ${state.wealth ? 'Loading KYC Module...' : 'KYC Skipped'}</span><br>
+                <span style="color:#aaa">>>> ${state.advisor ? '投顧 API 排程: 待 T+1 啟用' : ''}</span>
+            `;
+        }
+
+        // Init
+        calculateLogic();
+    </script>
+</body>
+</html>
